@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Conversion de devises</string>
+    <string name="main_screen">Ecran principal</string>
+    <string name="history">Historique</string>
+    <string name="exchange_app">Conversion de devises</string>
+    <string name="amount_to_be_converted">Montant à convertir</string>
+    <string name="from">De</string>
+    <string name="to">Vers</string>
+    <string name="a_coin_can_t_be_converted_to_itself">La monnaie ne peut pas être convertie vers elle même</string>
+    <string name="convert">Convertir</string>
+    <string name="save">Sauvegarder</string>
+</resources>
