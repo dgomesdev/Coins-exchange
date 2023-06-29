@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
                         convertCoinsAction = viewModel::getExchangeValues,
                         saveExchangeValues = viewModel::saveExchangeValues,
                         exchangeValues = mainState,
-                        exchangeValue = mainState?.bid ?: 1.0,
+                        bidValue = mainState?.bid ?: 1.0,
                         savedValues = historyState
                     )
                 }

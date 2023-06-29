@@ -37,7 +37,7 @@ fun ExchangeApp(
     convertCoinsAction: ConvertCoinsAction,
     saveExchangeValues: SaveExchangeValues,
     exchangeValues: ExchangeValues?,
-    exchangeValue: Double,
+    bidValue: Double,
     savedValues: List<ExchangeValues>
 ) {
     val navController = rememberNavController()
@@ -51,7 +51,7 @@ fun ExchangeApp(
             convertCoinsAction = convertCoinsAction,
             saveExchangeValues = saveExchangeValues,
             exchangeValues = exchangeValues,
-            exchangeValue = exchangeValue,
+            bidValue = bidValue,
             savedValues = savedValues
         )
     }

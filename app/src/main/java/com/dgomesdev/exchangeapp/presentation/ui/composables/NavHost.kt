@@ -20,7 +20,7 @@ fun ExchangeNavHost(
     convertCoinsAction: ConvertCoinsAction,
     saveExchangeValues: SaveExchangeValues,
     exchangeValues: ExchangeValues?,
-    exchangeValue: Double,
+    bidValue: Double,
     savedValues: List<ExchangeValues>
 ) {
     NavHost(
@@ -35,7 +35,7 @@ fun ExchangeNavHost(
                 convertCoinsAction = convertCoinsAction,
                 saveExchangeValues = saveExchangeValues,
                 exchangeValues = exchangeValues,
-                exchangeValue = exchangeValue
+                bidValue = bidValue
             )
         }
         composable(

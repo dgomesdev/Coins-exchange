@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import com.dgomesdev.exchangeapp.R
 import com.dgomesdev.exchangeapp.domain.model.ExchangeValues
 import com.dgomesdev.exchangeapp.presentation.ui.CoinList
-import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -47,7 +46,7 @@ fun MainScreen(
     convertCoinsAction: ConvertCoinsAction,
     saveExchangeValues: SaveExchangeValues,
     exchangeValues: ExchangeValues?,
-    exchangeValue: Double,
+    bidValue: Double,
 ) {
     var coinFrom by rememberSaveable {
         mutableStateOf("EUR")
@@ -58,7 +57,9 @@ fun MainScreen(
     var amount by rememberSaveable {
         mutableStateOf(0.0)
     }
-    val convertedAmount = amount * exchangeValue
+    var convertedAmount by rememberSaveable {
+        mutableStateOf(0.0)
+    }
     val isConversionValid = coinFrom != coinTo
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         AmountTextField(modifier = modifier.fillMaxWidth(), amountToBeConverted = {amount = it})
@@ -72,7 +73,9 @@ fun MainScreen(
             modifier = modifier,
             convertCoinsAction = convertCoinsAction,
             coinsToBeConverted = "$coinFrom-$coinTo",
-            isEnabled = isConversionValid
+            isEnabled = isConversionValid,
+            convertedAmount = amount * bidValue,
+            returnConvertedAmount = { convertedAmount = it }
         )
         SaveButton(
             modifier = modifier,
@@ -100,7 +103,7 @@ fun AmountTextField(
     }
     TextField(
         value = amount,
-        onValueChange = { amount = it ; amountToBeConverted(it.text.toDouble()) },
+        onValueChange = { amount = it ; amountToBeConverted(it.text.toDoubleOrNull() ?: 0.0) },
         label = { Text(stringResource(R.string.amount_to_be_converted)) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = modifier
@@ -160,10 +163,12 @@ fun ConvertButton(
     modifier: Modifier,
     convertCoinsAction: ConvertCoinsAction,
     coinsToBeConverted: String,
-    isEnabled: Boolean
+    isEnabled: Boolean,
+    convertedAmount: Double,
+    returnConvertedAmount: (Double) -> Unit
 ) {
     ElevatedButton(
-        onClick = { convertCoinsAction(coinsToBeConverted) },
+        onClick = { convertCoinsAction(coinsToBeConverted) ; returnConvertedAmount(convertedAmount) },
         enabled = isEnabled,
         modifier = modifier
     ) {
