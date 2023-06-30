@@ -16,7 +16,7 @@ fun HistoryScreen(
     savedValues: List<ExchangeValues>
 ) {
     LazyColumn(
-        modifier = modifier.padding(16.dp)
+        modifier = modifier
     ) {
         items(savedValues) {
             Text("${DecimalFormat("#,#00.00").format(it.convertedAmount)} ${it.code} = ${DecimalFormat("#,#00.00").format(it.bid * it.convertedAmount)} ${it.codein}" , modifier.padding(top = 8.dp))

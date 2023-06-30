@@ -25,13 +25,14 @@ fun ExchangeNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "Main screen"
+        startDestination = "Main screen",
+        modifier = modifier
     ) {
         composable(
             route = "Main screen"
         ) {
             MainScreen(
-                modifier = modifier.padding(16.dp),
+                modifier = Modifier.padding(16.dp),
                 convertCoinsAction = convertCoinsAction,
                 saveExchangeValues = saveExchangeValues,
                 exchangeValues = exchangeValues,
@@ -42,7 +43,7 @@ fun ExchangeNavHost(
             route = "History screen"
         ) {
             HistoryScreen(
-                modifier = modifier.padding(16.dp),
+                modifier = Modifier.padding(16.dp),
                 savedValues = savedValues
             )
         }
