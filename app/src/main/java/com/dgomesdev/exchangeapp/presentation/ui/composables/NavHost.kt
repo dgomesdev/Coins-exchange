@@ -7,44 +7,44 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.dgomesdev.exchangeapp.domain.model.ExchangeValues
-import com.dgomesdev.exchangeapp.presentation.screens.ConvertCoinsAction
-import com.dgomesdev.exchangeapp.presentation.screens.HistoryScreen
-import com.dgomesdev.exchangeapp.presentation.screens.MainScreen
-import com.dgomesdev.exchangeapp.presentation.screens.SaveExchangeValues
+import com.dgomesdev.exchangeapp.presentation.screens.ConversionScreen
+import com.dgomesdev.exchangeapp.presentation.screens.OnCoinConversion
+import com.dgomesdev.exchangeapp.presentation.screens.OnConversionButtonClick
+import com.dgomesdev.exchangeapp.presentation.screens.TodayConversionScreen
 
 @Composable
 fun ExchangeNavHost(
     navController: NavHostController,
     modifier: Modifier,
-    convertCoinsAction: ConvertCoinsAction,
-    saveExchangeValues: SaveExchangeValues,
-    exchangeValues: ExchangeValues?,
-    bidValue: Double,
-    savedValues: List<ExchangeValues>
+    convertedValues: List<Double>,
+    todayValues: List<Double>,
+    lastUpdateDate: String,
+    onCoinConversion: OnCoinConversion,
+    onConversionButtonClick: OnConversionButtonClick
 ) {
+    val padding = Modifier.padding(8.dp)
     NavHost(
         navController = navController,
-        startDestination = "Main screen",
+        startDestination = "Conversion screen",
         modifier = modifier
     ) {
         composable(
-            route = "Main screen"
+            route = "Conversion screen"
         ) {
-            MainScreen(
-                modifier = Modifier.padding(16.dp),
-                convertCoinsAction = convertCoinsAction,
-                saveExchangeValues = saveExchangeValues,
-                exchangeValues = exchangeValues,
-                bidValue = bidValue
+            ConversionScreen(
+                modifier = padding,
+                convertedValues = convertedValues,
+                onCoinConversion = onCoinConversion,
+                onConversionButtonClick = onConversionButtonClick
             )
         }
         composable(
-            route = "History screen"
+            route = "Today's values screen"
         ) {
-            HistoryScreen(
-                modifier = Modifier.padding(16.dp),
-                savedValues = savedValues
+            TodayConversionScreen(
+                modifier = padding,
+                valuesList = todayValues,
+                lastUpdateDate = lastUpdateDate
             )
         }
     }

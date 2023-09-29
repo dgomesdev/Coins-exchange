@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class ExchangeRepositoryImpl @Inject constructor(
+class   ExchangeRepositoryImpl @Inject constructor(
     private val service: ExchangeService,
     private val exchangeDao: ExchangeDao
 ) : ExchangeRepository {
@@ -19,5 +19,5 @@ class ExchangeRepositoryImpl @Inject constructor(
         exchangeDao.save(exchangeValues)
     }
 
-    override fun list(): Flow<List<ExchangeValues>> = exchangeDao.getAll()
+    override fun getLastUpdatedValues(): Flow<List<ExchangeValues>> = exchangeDao.getAll()
 }

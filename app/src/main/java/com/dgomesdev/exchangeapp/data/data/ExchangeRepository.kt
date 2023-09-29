@@ -9,5 +9,5 @@ interface ExchangeRepository {
 
     suspend fun save(exchangeValues: ExchangeValues)
 
-    fun list(): Flow<List<ExchangeValues>>
+    fun getLastUpdatedValues(): Flow<List<ExchangeValues>>
 }

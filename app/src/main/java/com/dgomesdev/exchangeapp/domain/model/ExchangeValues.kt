@@ -2,16 +2,15 @@ package com.dgomesdev.exchangeapp.domain.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 
 typealias ExchangeResponse = HashMap<String, ExchangeValues>
 
 @Entity(tableName = "coin_table")
 data class ExchangeValues (
-    @PrimaryKey(autoGenerate = true)
-    val id: Int,
-    val code: String,
-    val codein: String,
+    @PrimaryKey
     val name: String,
     val bid: Double,
-    val convertedAmount: Double
+    @SerializedName("create_date")
+    val createDate: String
 )

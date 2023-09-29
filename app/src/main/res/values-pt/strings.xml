@@ -2,12 +2,13 @@
 <resources>
     <string name="app_name">Conversão de moedas</string>
     <string name="main_screen">Tela principal</string>
-    <string name="history">Histórico</string>
-    <string name="exchange_app">Conversão de moedas</string>
+    <string name="history">Valores de hoje</string>
     <string name="amount_to_be_converted">Valor a ser convertido</string>
-    <string name="from">De</string>
-    <string name="to">Para</string>
-    <string name="a_coin_can_t_be_converted_to_itself">A moeda não pode ser convertida para ela mesma</string>
     <string name="convert">Converter</string>
-    <string name="save">Salvar</string>
+    <string name="exchange_values">Valores de conversão</string>
+    <string name="last_update_values">Últimos valores atualizados</string>
+    <string name="last_update_at">Data da última atualização:</string>
+    <string name="success">Sucesso</string>
+    <string name="error">Erro de carregamento dos dados</string>
+    <string name="loading">Carregando</string>
 </resources>
