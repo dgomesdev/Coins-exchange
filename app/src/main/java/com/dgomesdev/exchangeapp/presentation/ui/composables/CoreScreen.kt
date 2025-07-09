@@ -1,6 +1,5 @@
 package com.dgomesdev.exchangeapp.presentation.ui.composables
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -20,70 +19,68 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.rememberNavController
 import com.dgomesdev.exchangeapp.R
-import com.dgomesdev.exchangeapp.presentation.screens.OnCoinConversion
+import com.dgomesdev.exchangeapp.domain.Coin
+import com.dgomesdev.exchangeapp.domain.ExchangeModel
+import com.dgomesdev.exchangeapp.presentation.ui.Route
 import com.dgomesdev.exchangeapp.presentation.ui.theme.barColor
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+typealias OnChangeAmount = (String) -> Unit
+typealias OnChangeSelectedCoin = (Coin) -> Unit
 @Composable
 fun ExchangeApp(
-    convertedValues: List<Double>,
-    todayValues: List<Double>,
+    allValues: List<ExchangeModel>,
     lastUpdateDate: String,
-    onCoinConversion: OnCoinConversion,
-    statusMessage: String,
+    onChangeAmount: OnChangeAmount,
+    selectedCoin: Coin,
+    onChangeSelectedCoin: OnChangeSelectedCoin,
+    amountToBeConverted: Double
 ) {
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
-        topBar = { ExchangeTopBar() },
+        topBar = { ExchangeTopBar(scope, snackbarHostState) },
         bottomBar = { ExchangeBottomBar { navController.navigate(it) } },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {
         ExchangeNavHost(
             navController = navController,
             modifier = Modifier.padding(it),
-            convertedValues = convertedValues,
-            todayValues = todayValues,
+            allValues = allValues,
             lastUpdateDate = lastUpdateDate,
-            onCoinConversion = onCoinConversion,
-            onConversionButtonClick = {
-                scope.launch {
-                    snackbarHostState.showSnackbar(
-                        statusMessage,
-                        duration = SnackbarDuration.Short
-                    )
-                }
-            }
+            onChangeAmount = onChangeAmount,
+            selectedCoin = selectedCoin,
+            onChangeSelectedCoin = onChangeSelectedCoin,
+            amountToBeConverted = amountToBeConverted
         )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExchangeTopBar() {
-    val context = LocalContext.current
+fun ExchangeTopBar(scope: CoroutineScope, snackbarHostState: SnackbarHostState) {
     TopAppBar(
         title = { Text(stringResource(R.string.app_name), color = Color.Black) },
         actions = {
             IconButton(onClick = {
-                Toast.makeText(
-                    context,
-                    "Developed by Dgomes Dev",
-                    Toast.LENGTH_SHORT
-                ).show()
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        "Developed by Dgomes Dev",
+                        duration = SnackbarDuration.Short
+                    )
+                }
             }) {
                 Icon(
                     imageVector = Icons.Filled.Info,
@@ -101,16 +98,16 @@ fun ExchangeBottomBar(
     navigateToScreen: (String) -> Unit,
 ) {
     var currentScreen by rememberSaveable {
-        mutableStateOf(0)
+        mutableIntStateOf(0)
     }
-    val screens = listOf("Conversion screen", "Today's values screen")
+    val screens = Route.entries
     NavigationBar(
         containerColor = barColor
     ) {
         screens.forEachIndexed { index, screen ->
             NavigationBarItem(
                 selected = currentScreen == index,
-                onClick = { navigateToScreen(screen); currentScreen = index },
+                onClick = { navigateToScreen(screen.route); currentScreen = index },
                 icon = {
                     if (index == 0) Icon(
                         imageVector = Icons.Default.Home,
@@ -119,7 +116,7 @@ fun ExchangeBottomBar(
                     )
                     else Icon(
                         imageVector = Icons.Default.DateRange,
-                        contentDescription = "Today's conversion values",
+                        contentDescription = "All conversion values",
                         tint = Color.Black
                     )
                 },

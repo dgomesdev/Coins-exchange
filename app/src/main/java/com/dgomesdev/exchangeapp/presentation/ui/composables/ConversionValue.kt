@@ -9,17 +9,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dgomesdev.exchangeapp.domain.ConversionPair
+import com.dgomesdev.exchangeapp.domain.ExchangeModel
 import java.text.DecimalFormat
 
 @Composable
 fun ConversionValue(
     modifier: Modifier = Modifier,
-    value: Double,
-    coin: String
+    value: ExchangeModel,
+    amountToBeConverted: Double = 1.0
 ) {
 
+    val conversionText = when (value.conversionPair) {
+        ConversionPair.USDBRL -> "$amountToBeConverted USD = ${(value.bid * amountToBeConverted).formatValue()} BRL"
+        ConversionPair.EURBRL -> "$amountToBeConverted EUR = ${(value.bid * amountToBeConverted).formatValue()} BRL"
+        ConversionPair.BRLUSD -> "$amountToBeConverted BRL = ${(value.bid * amountToBeConverted).formatValue()} USD"
+        ConversionPair.EURUSD -> "$amountToBeConverted EUR = ${(value.bid * amountToBeConverted).formatValue()} USD"
+        ConversionPair.BRLEUR -> "$amountToBeConverted BRL = ${(value.bid * amountToBeConverted).formatValue()} EUR"
+        ConversionPair.USDEUR -> "$amountToBeConverted USD = ${(value.bid * amountToBeConverted).formatValue()} EUR"
+    }
+
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        Text(text = "${value.formatNumber()} $coin", modifier, fontSize = 20.sp)
+        Text(text = conversionText, modifier, fontSize = 20.sp)
     }
 }
 
@@ -29,9 +40,9 @@ fun ConversionValuePreview() {
 
     ConversionValue(
         Modifier.padding(8.dp),
-        10.00000,
-        "USD"
+        ExchangeModel(ConversionPair.BRLEUR, "", 2.0, code = "BRL"),
+        5.0
     )
 }
 
-fun Double.formatNumber(): String = DecimalFormat("#,##0.00").format(this)
+fun Double.formatValue(): String = DecimalFormat("#,##0.00").format(this)

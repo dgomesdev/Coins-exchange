@@ -7,43 +7,47 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.dgomesdev.exchangeapp.domain.Coin
+import com.dgomesdev.exchangeapp.domain.ExchangeModel
 import com.dgomesdev.exchangeapp.presentation.screens.ConversionScreen
-import com.dgomesdev.exchangeapp.presentation.screens.OnCoinConversion
-import com.dgomesdev.exchangeapp.presentation.screens.OnConversionButtonClick
 import com.dgomesdev.exchangeapp.presentation.screens.TodayConversionScreen
+import com.dgomesdev.exchangeapp.presentation.ui.Route
 
 @Composable
 fun ExchangeNavHost(
     navController: NavHostController,
     modifier: Modifier,
-    convertedValues: List<Double>,
-    todayValues: List<Double>,
+    allValues: List<ExchangeModel>,
     lastUpdateDate: String,
-    onCoinConversion: OnCoinConversion,
-    onConversionButtonClick: OnConversionButtonClick
+    onChangeAmount: OnChangeAmount,
+    selectedCoin: Coin,
+    onChangeSelectedCoin: OnChangeSelectedCoin,
+    amountToBeConverted: Double
 ) {
     val padding = Modifier.padding(8.dp)
     NavHost(
         navController = navController,
-        startDestination = "Conversion screen",
+        startDestination = Route.CONVERSION_SCREEN.route,
         modifier = modifier
     ) {
         composable(
-            route = "Conversion screen"
+            route = Route.CONVERSION_SCREEN.route
         ) {
             ConversionScreen(
                 modifier = padding,
-                convertedValues = convertedValues,
-                onCoinConversion = onCoinConversion,
-                onConversionButtonClick = onConversionButtonClick
+                allValues = allValues,
+                onChangeAmount = onChangeAmount,
+                selectedCoin = selectedCoin,
+                onChangeSelectedCoin = onChangeSelectedCoin,
+                amountToBeConverted = amountToBeConverted
             )
         }
         composable(
-            route = "Today's values screen"
+            route = Route.ALL_VALUES_SCREEN.route
         ) {
             TodayConversionScreen(
                 modifier = padding,
-                valuesList = todayValues,
+                valuesList = allValues,
                 lastUpdateDate = lastUpdateDate
             )
         }

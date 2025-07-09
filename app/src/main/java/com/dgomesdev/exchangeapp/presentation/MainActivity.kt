@@ -9,10 +9,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import com.dgomesdev.exchangeapp.R
 import com.dgomesdev.exchangeapp.presentation.ui.composables.ExchangeApp
 import com.dgomesdev.exchangeapp.presentation.ui.theme.ExchangeAppTheme
+import com.dgomesdev.exchangeapp.presentation.viewModel.ExchangeViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -20,37 +25,24 @@ class MainActivity : ComponentActivity() {
     private val viewModel: ExchangeViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val now = ZonedDateTime.now(ZoneId.systemDefault())
+        val formattedDate = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+            .withLocale(Locale.getDefault())
+        val lastUpdateDate = now.format(formattedDate)
         setContent {
-            lateinit var valuesList: List<Double>
-            lateinit var statusMessage: String
-            val todayValues = viewModel.todayValuesList.collectAsState().value
-            val lastUpdateDate = viewModel.lastUpdateDate.collectAsState().value
-            when (val valuesListState = viewModel.conversionValuesList.collectAsState().value) {
-                is State.Success -> {
-                    valuesList = valuesListState.valuesList
-                    statusMessage = getString(R.string.success)
-                }
-                is State.Failure -> {
-                    valuesList = listOf(0.0, 0.0, 0.0)
-                    statusMessage = getString(R.string.error)
-                }
-                State.Loading -> {
-                    valuesList = listOf(0.0, 0.0, 0.0)
-                    statusMessage = getString(R.string.loading)
-                }
-                null -> {}
-            }
+            val uiState = viewModel.uiState.collectAsState().value
             ExchangeAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     ExchangeApp(
-                        convertedValues = valuesList,
-                        todayValues = todayValues,
+                        allValues = uiState.values,
                         lastUpdateDate = lastUpdateDate,
-                        onCoinConversion = viewModel::getExchangeValues,
-                        statusMessage = statusMessage
+                        onChangeAmount = viewModel::onChangeAmount,
+                        selectedCoin = uiState.selectedCoin,
+                        onChangeSelectedCoin = viewModel::onChangeSelectedCoin,
+                        amountToBeConverted = uiState.amountToBeConverted
                     )
                 }
             }
