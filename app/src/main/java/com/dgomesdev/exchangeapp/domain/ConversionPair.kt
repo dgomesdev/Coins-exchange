@@ -1,12 +1,12 @@
 package com.dgomesdev.exchangeapp.domain
 
 enum class ConversionPair(val pair: String) {
-    USDBRL("USD-BRL"),
-    EURBRL("EUR-BRL"),
     BRLUSD("BRL-USD"),
-    EURUSD("EUR-USD"),
     BRLEUR("BRL-EUR"),
-    USDEUR("USD-EUR");
+    USDBRL("USD-BRL"),
+    USDEUR("USD-EUR"),
+    EURBRL("EUR-BRL"),
+    EURUSD("EUR-USD");
 
     companion object {
         fun fromEntity(pairString: String): ConversionPair {

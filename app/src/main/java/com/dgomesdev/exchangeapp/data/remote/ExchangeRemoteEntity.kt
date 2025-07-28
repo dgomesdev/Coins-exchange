@@ -3,7 +3,6 @@ package com.dgomesdev.exchangeapp.data.remote
 import com.google.gson.annotations.SerializedName
 
 typealias ExchangeResponse = Map<String, ExchangeValue>
-
 typealias ExchangeRemoteEntity = Map.Entry<String, ExchangeValue>
 
 data class ExchangeValue (
