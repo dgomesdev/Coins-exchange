@@ -1,6 +1,6 @@
 package com.dgomesdev.exchangeapp.domain
 
-enum class ConversionPair(val pair: String) {
+enum class ConversionPair(val coins: String) {
     BRLUSD("BRL-USD"),
     BRLEUR("BRL-EUR"),
     USDBRL("USD-BRL"),

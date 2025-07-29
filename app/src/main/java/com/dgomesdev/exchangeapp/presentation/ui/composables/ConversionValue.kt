@@ -40,7 +40,7 @@ fun ConversionValuePreview() {
 
     ConversionValue(
         Modifier.padding(8.dp),
-        ExchangeModel(ConversionPair.BRLEUR, "", 2.0, code = "BRL"),
+        ExchangeModel(ConversionPair.BRLEUR, 2.0, code = "BRL"),
         5.0
     )
 }

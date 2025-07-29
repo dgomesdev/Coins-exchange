@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey
 data class ExchangeLocalEntity(
     @PrimaryKey
     val conversionPair: String,
-    val name: String,
     val bid: Double,
     val code: String
 )

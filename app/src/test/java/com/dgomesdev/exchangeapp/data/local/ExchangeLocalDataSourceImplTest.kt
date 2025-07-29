@@ -1,10 +1,12 @@
 package com.dgomesdev.exchangeapp.data.local
 
+import com.dgomesdev.exchangeapp.domain.Coin
+import com.dgomesdev.exchangeapp.domain.ConversionPair
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
+import kotlin.test.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
@@ -23,7 +25,13 @@ class ExchangeLocalDataSourceImplTest {
     @Mock
     private lateinit var mockDao: ExchangeDao
 
-    private val mockEntity = ExchangeLocalEntity("USD-BRL", "1.0", 1.0, "USDBRL")
+    private val mockConversionPair = ConversionPair.USDBRL
+
+    private val mockEntity = ExchangeLocalEntity(
+        mockConversionPair.name,
+        1.0,
+        Coin.USD.name
+    )
 
     @Test
     fun `getAll   success   Empty DB`() {
@@ -38,7 +46,7 @@ class ExchangeLocalDataSourceImplTest {
             val result = localDataSource.getAll().single()
 
             // Then
-            assertEquals(emptyList<ExchangeLocalEntity>(), result)
+            assertEquals(emptyList(), result)
         }
     }
 

@@ -19,7 +19,7 @@ class ExchangeRepositoryImpl @Inject constructor(
             throw IllegalArgumentException("Coins list can't be empty")
         }
 
-        val coinsList: String = conversionPairs.joinToString(separator = ",") { it.pair }
+        val coinsList: String = conversionPairs.joinToString(separator = ",") { it.coins }
 
         val remoteFetchAndSaveFlow = flow {
             val remoteResult = remoteDataSource.getExchangeValues(coinsList).map { entity ->
@@ -33,14 +33,13 @@ class ExchangeRepositoryImpl @Inject constructor(
 
         return remoteFetchAndSaveFlow.catch { error ->
             val currentLocalEntities = localDataSource.getAll().firstOrNull()
-            if (currentLocalEntities != null) {
-                val localResult = currentLocalEntities.map { entity ->
-                    ExchangeModel.fromLocalEntity(entity)
-                }
-                emit(localResult)
-            } else {
+            if (currentLocalEntities.isNullOrEmpty()) {
                 throw RuntimeException("Failed to fetch from remote, and no local data found.")
             }
+            val localResult = currentLocalEntities.map { entity ->
+                ExchangeModel.fromLocalEntity(entity)
+            }
+            emit(localResult)
         }
     }
 }
