@@ -22,7 +22,7 @@ import com.dgomesdev.exchangeapp.domain.Coin
 fun CoinToBeConverted(
     modifier: Modifier,
     selectedCoin: Coin,
-    onChangeSelectedCoin: OnChangeSelectedCoin
+    onChangeSelectedCoin: (Coin) -> Unit
 ) {
 
     var expandedMenu by remember {

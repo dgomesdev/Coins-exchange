@@ -11,4 +11,5 @@
     <string name="success">Succès</string>
     <string name="error">Erreur de chargement</string>
     <string name="loading">Chargement</string>
+    <string name="retry">Réessayer</string>
 </resources>

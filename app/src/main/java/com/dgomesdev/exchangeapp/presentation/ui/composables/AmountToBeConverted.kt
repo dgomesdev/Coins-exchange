@@ -17,7 +17,7 @@ import com.dgomesdev.exchangeapp.R
 @Composable
 fun AmountToBeConverted(
     modifier: Modifier,
-    onChangeAmount: OnChangeAmount
+    onChangeAmount: (String) -> Unit
 ) {
     var amountToBeConverted by rememberSaveable {
         mutableStateOf("")

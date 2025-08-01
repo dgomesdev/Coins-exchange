@@ -25,7 +25,7 @@ class ExchangeViewModel @Inject constructor(
         getValues()
     }
 
-    private fun getValues() {
+    fun getValues() {
         val conversionPairs = ConversionPair.entries
         viewModelScope.launch {
             repository.getValues(conversionPairs)

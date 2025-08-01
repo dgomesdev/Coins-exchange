@@ -1,28 +1,24 @@
 package com.dgomesdev.exchangeapp.presentation.ui.composables
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.dgomesdev.exchangeapp.domain.Coin
-import com.dgomesdev.exchangeapp.domain.ExchangeModel
+import com.dgomesdev.exchangeapp.presentation.screens.AllValuesScreen
 import com.dgomesdev.exchangeapp.presentation.screens.ConversionScreen
-import com.dgomesdev.exchangeapp.presentation.screens.TodayConversionScreen
 import com.dgomesdev.exchangeapp.presentation.ui.Route
+import com.dgomesdev.exchangeapp.presentation.viewModel.ExchangeViewModel
 
 @Composable
 fun ExchangeNavHost(
     navController: NavHostController,
     modifier: Modifier,
-    allValues: List<ExchangeModel>,
-    lastUpdateDate: String,
-    onChangeAmount: OnChangeAmount,
-    selectedCoin: Coin,
-    onChangeSelectedCoin: OnChangeSelectedCoin,
-    amountToBeConverted: Double
+    viewModel: ExchangeViewModel,
+    snackbarHostState: SnackbarHostState
 ) {
     val padding = Modifier.padding(8.dp)
     NavHost(
@@ -35,20 +31,17 @@ fun ExchangeNavHost(
         ) {
             ConversionScreen(
                 modifier = padding,
-                allValues = allValues,
-                onChangeAmount = onChangeAmount,
-                selectedCoin = selectedCoin,
-                onChangeSelectedCoin = onChangeSelectedCoin,
-                amountToBeConverted = amountToBeConverted
+                viewModel = viewModel,
+                snackbarHostState = snackbarHostState
             )
         }
         composable(
             route = Route.ALL_VALUES_SCREEN.route
         ) {
-            TodayConversionScreen(
+            AllValuesScreen(
                 modifier = padding,
-                valuesList = allValues,
-                lastUpdateDate = lastUpdateDate
+                viewModel = viewModel,
+                snackbarHostState = snackbarHostState
             )
         }
     }

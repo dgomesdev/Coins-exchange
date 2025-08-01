@@ -21,12 +21,12 @@ fun ConversionValue(
 ) {
 
     val conversionText = when (value.conversionPair) {
-        ConversionPair.USDBRL -> "$amountToBeConverted USD = ${(value.bid * amountToBeConverted).formatValue()} BRL"
-        ConversionPair.EURBRL -> "$amountToBeConverted EUR = ${(value.bid * amountToBeConverted).formatValue()} BRL"
-        ConversionPair.BRLUSD -> "$amountToBeConverted BRL = ${(value.bid * amountToBeConverted).formatValue()} USD"
-        ConversionPair.EURUSD -> "$amountToBeConverted EUR = ${(value.bid * amountToBeConverted).formatValue()} USD"
-        ConversionPair.BRLEUR -> "$amountToBeConverted BRL = ${(value.bid * amountToBeConverted).formatValue()} EUR"
-        ConversionPair.USDEUR -> "$amountToBeConverted USD = ${(value.bid * amountToBeConverted).formatValue()} EUR"
+        ConversionPair.USDBRL -> "${amountToBeConverted.formatValue()} USD = ${(value.bid * amountToBeConverted).formatValue()} BRL"
+        ConversionPair.EURBRL -> "${amountToBeConverted.formatValue()} EUR = ${(value.bid * amountToBeConverted).formatValue()} BRL"
+        ConversionPair.BRLUSD -> "${amountToBeConverted.formatValue()} BRL = ${(value.bid * amountToBeConverted).formatValue()} USD"
+        ConversionPair.EURUSD -> "${amountToBeConverted.formatValue()} EUR = ${(value.bid * amountToBeConverted).formatValue()} USD"
+        ConversionPair.BRLEUR -> "${amountToBeConverted.formatValue()} BRL = ${(value.bid * amountToBeConverted).formatValue()} EUR"
+        ConversionPair.USDEUR -> "${amountToBeConverted.formatValue()} USD = ${(value.bid * amountToBeConverted).formatValue()} EUR"
     }
 
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {

@@ -29,48 +29,35 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.rememberNavController
 import com.dgomesdev.exchangeapp.R
-import com.dgomesdev.exchangeapp.domain.Coin
-import com.dgomesdev.exchangeapp.domain.ExchangeModel
 import com.dgomesdev.exchangeapp.presentation.ui.Route
 import com.dgomesdev.exchangeapp.presentation.ui.theme.barColor
-import kotlinx.coroutines.CoroutineScope
+import com.dgomesdev.exchangeapp.presentation.viewModel.ExchangeViewModel
 import kotlinx.coroutines.launch
 
-typealias OnChangeAmount = (String) -> Unit
-typealias OnChangeSelectedCoin = (Coin) -> Unit
 @Composable
 fun ExchangeApp(
-    allValues: List<ExchangeModel>,
-    lastUpdateDate: String,
-    onChangeAmount: OnChangeAmount,
-    selectedCoin: Coin,
-    onChangeSelectedCoin: OnChangeSelectedCoin,
-    amountToBeConverted: Double
+    viewModel: ExchangeViewModel,
 ) {
     val navController = rememberNavController()
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
-        topBar = { ExchangeTopBar(scope, snackbarHostState) },
+        topBar = { ExchangeTopBar(snackbarHostState) },
         bottomBar = { ExchangeBottomBar { navController.navigate(it) } },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {
         ExchangeNavHost(
             navController = navController,
             modifier = Modifier.padding(it),
-            allValues = allValues,
-            lastUpdateDate = lastUpdateDate,
-            onChangeAmount = onChangeAmount,
-            selectedCoin = selectedCoin,
-            onChangeSelectedCoin = onChangeSelectedCoin,
-            amountToBeConverted = amountToBeConverted
+            viewModel = viewModel,
+            snackbarHostState = snackbarHostState
         )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExchangeTopBar(scope: CoroutineScope, snackbarHostState: SnackbarHostState) {
+fun ExchangeTopBar(snackbarHostState: SnackbarHostState) {
+    val scope = rememberCoroutineScope()
     TopAppBar(
         title = { Text(stringResource(R.string.app_name), color = Color.Black) },
         actions = {
