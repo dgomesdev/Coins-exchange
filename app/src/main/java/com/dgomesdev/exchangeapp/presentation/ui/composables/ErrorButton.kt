@@ -20,7 +20,7 @@ fun ErrorButton(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Button(onClick = { retryAction }) {
+        Button(onClick = { retryAction() }) {
             Text(text = stringResource(R.string.retry))
         }
     }

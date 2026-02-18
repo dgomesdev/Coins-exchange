@@ -14,10 +14,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -31,26 +33,54 @@ import androidx.navigation.compose.rememberNavController
 import com.dgomesdev.exchangeapp.R
 import com.dgomesdev.exchangeapp.presentation.ui.Route
 import com.dgomesdev.exchangeapp.presentation.ui.theme.barColor
+import com.dgomesdev.exchangeapp.presentation.viewModel.ExchangeState
+import com.dgomesdev.exchangeapp.presentation.viewModel.ExchangeStateStatus
 import com.dgomesdev.exchangeapp.presentation.viewModel.ExchangeViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun ExchangeApp(
     viewModel: ExchangeViewModel,
+    state: ExchangeState
 ) {
-    val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
+    val retryLabel = stringResource(R.string.retry)
+    val navController = rememberNavController()
+
+    LaunchedEffect(state.status) {
+        if (state.status == ExchangeStateStatus.ERROR) {
+            launch {
+                snackbarHostState.showSnackbar(
+                    message = state.errorMessage,
+                    actionLabel = retryLabel
+                ).also {
+                    if (it == SnackbarResult.ActionPerformed) {
+                        viewModel.getValues()
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = { ExchangeTopBar(snackbarHostState) },
         bottomBar = { ExchangeBottomBar { navController.navigate(it) } },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {
-        ExchangeNavHost(
-            navController = navController,
-            modifier = Modifier.padding(it),
-            viewModel = viewModel,
-            snackbarHostState = snackbarHostState
-        )
+        when (state.status) {
+            ExchangeStateStatus.LOADING -> LoadingIndicator()
+            ExchangeStateStatus.ERROR -> ErrorButton(retryAction = viewModel::getValues)
+            ExchangeStateStatus.SUCCESS -> {
+                ExchangeNavHost(
+                    navController = navController,
+                    modifier = Modifier.padding(it),
+                    viewModel = viewModel,
+                    amountToBeConverted = state.amountToBeConverted,
+                    selectedCoin = state.selectedCoin,
+                    lastUpdatedDate = state.lastUpdatedDate
+                )
+            }
+        }
     }
 }
 
@@ -76,7 +106,7 @@ fun ExchangeTopBar(snackbarHostState: SnackbarHostState) {
                 )
             }
         },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = barColor)
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = barColor)
     )
 }
 

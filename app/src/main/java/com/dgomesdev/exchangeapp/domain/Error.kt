@@ -9,3 +9,4 @@ class ServerErrorException(httpStatusCode: Int, cause: Throwable? = null) : ApiE
 class ClientErrorException(httpStatusCode: Int, cause: Throwable? = null) : ApiException("Client error: $httpStatusCode", cause)
 class TimeoutException(message: String = "The request timed out.", cause: Throwable? = null) : ApiException(message, cause)
 class UnexpectedApiException(message: String = "An unexpected API error occurred.", cause: Throwable? = null) : ApiException(message, cause)
+class RepositoryError(message: String = "An unexpected repository error occurred.", cause: Throwable? = null) : ApiException(message, cause)

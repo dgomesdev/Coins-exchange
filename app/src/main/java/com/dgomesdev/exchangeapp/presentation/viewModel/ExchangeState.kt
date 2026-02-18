@@ -5,10 +5,11 @@ import com.dgomesdev.exchangeapp.domain.ExchangeModel
 
 data class ExchangeState(
     val values: List<ExchangeModel> = listOf(),
-    val status: ExchangeStateStatus = ExchangeStateStatus.SUCCESS,
+    val status: ExchangeStateStatus = ExchangeStateStatus.LOADING,
     val errorMessage: String = "",
     val selectedCoin: Coin = Coin.BRL,
-    val amountToBeConverted: Double = 0.0
+    val amountToBeConverted: String = "",
+    val lastUpdatedDate: String = ""
 )
 
 enum class ExchangeStateStatus {
