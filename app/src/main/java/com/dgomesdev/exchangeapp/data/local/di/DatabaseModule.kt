@@ -27,7 +27,8 @@ object DatabaseModule {
             application,
             ExchangeDatabase::class.java,
             "exchange_database"
-        ).build()
+        ).fallbackToDestructiveMigration(true)
+            .build()
 
     @Provides
     @Singleton
