@@ -1,5 +1,3 @@
-import com.android.build.api.dsl.ApplicationExtension
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -8,7 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose") version "2.3.10"
 }
 
-configure<ApplicationExtension>  {
+android {
     namespace = "com.dgomesdev.exchangeapp"
     compileSdk = 36
 
@@ -70,6 +68,8 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("com.google.android.material:material:1.13.0")
 
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
