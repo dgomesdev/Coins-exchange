@@ -1,9 +1,8 @@
 package com.dgomesdev.exchangeapp.data.local
 
-import kotlinx.coroutines.flow.Flow
-
 interface ExchangeLocalDataSource {
-    fun getAll(): Flow<List<ExchangeLocalEntity>>
+    suspend fun saveExchangeData(exchangeValues: List<ExchangeLocalEntity>)
+    suspend fun getLastUpdatedTimestamp(): LastUpdatedTimestamp?
 
-    suspend fun save(exchangeValues: ExchangeLocalEntity)
+    suspend fun getAllExchangeValues(): List<ExchangeLocalEntity>
 }
