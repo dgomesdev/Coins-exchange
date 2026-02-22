@@ -12,7 +12,6 @@ import dagger.hilt.components.SingletonComponent
 @Suppress("unused")
 abstract class RepositoryModule {
 
-    // If using @Binds, the module must be abstract
     @Binds
     abstract fun bindRepository(exchangeRepositoryImpl: ExchangeRepositoryImpl): ExchangeRepository
 }

@@ -1,9 +1,11 @@
 package com.dgomesdev.exchangeapp.data.local
 
 import android.util.Log
+import javax.inject.Inject
 
-class ExchangeLocalDataSourceImpl(val exchangeDao: ExchangeDao) : ExchangeLocalDataSource {
-
+class ExchangeLocalDataSourceImpl @Inject constructor(
+    val exchangeDao: ExchangeDao
+) : ExchangeLocalDataSource {
     override suspend fun saveExchangeData(exchangeValues: List<ExchangeLocalEntity>) {
         Log.i("ExchangeLocalDataSource", "saveExchangeData: $exchangeValues")
         exchangeValues.forEach { exchangeDao.saveExchange(it) }

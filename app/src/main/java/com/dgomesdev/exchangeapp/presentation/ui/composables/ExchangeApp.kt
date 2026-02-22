@@ -18,6 +18,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,7 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.rememberNavController
+import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_MEDIUM_LOWER_BOUND
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import com.dgomesdev.exchangeapp.R
+import com.dgomesdev.exchangeapp.presentation.screens.LargeScreenLayout
 import com.dgomesdev.exchangeapp.presentation.ui.Route
 import com.dgomesdev.exchangeapp.presentation.ui.theme.barColor
 import com.dgomesdev.exchangeapp.presentation.viewModel.ExchangeState
@@ -46,6 +50,12 @@ fun ExchangeApp(
     val snackbarHostState = remember { SnackbarHostState() }
     val retryLabel = stringResource(R.string.retry)
     val navController = rememberNavController()
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val isLargeHeight = windowSizeClass.isHeightAtLeastBreakpoint(HEIGHT_DP_MEDIUM_LOWER_BOUND)
+    val isLargeWidth = windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND)
+
+    val isLargeScreen = isLargeHeight && isLargeWidth
+    val isLandscape = !isLargeHeight && isLargeWidth
 
     LaunchedEffect(state.status) {
         if (state.status == ExchangeStateStatus.ERROR) {
@@ -64,21 +74,32 @@ fun ExchangeApp(
 
     Scaffold(
         topBar = { ExchangeTopBar(snackbarHostState) },
-        bottomBar = { ExchangeBottomBar { navController.navigate(it) } },
+        bottomBar = { if (!isLargeScreen) { ExchangeBottomBar { navController.navigate(it) } } },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {
         when (state.status) {
             ExchangeStateStatus.LOADING -> LoadingIndicator()
             ExchangeStateStatus.ERROR -> ErrorButton(retryAction = viewModel::getValues)
             ExchangeStateStatus.SUCCESS -> {
-                ExchangeNavHost(
-                    navController = navController,
-                    modifier = Modifier.padding(it),
-                    viewModel = viewModel,
-                    amountToBeConverted = state.amountToBeConverted,
-                    selectedCoin = state.selectedCoin,
-                    lastUpdatedDate = state.lastUpdatedDate
-                )
+                if (isLargeScreen) {
+                    LargeScreenLayout(
+                        modifier = Modifier.padding(it),
+                        viewModel = viewModel,
+                        amountToBeConverted = state.amountToBeConverted,
+                        selectedCoin = state.selectedCoin,
+                        lastUpdatedDate = state.lastUpdatedDate
+                    )
+                } else {
+                    ExchangeNavHost(
+                        navController = navController,
+                        isLandscape = isLandscape,
+                        modifier = Modifier.padding(it),
+                        viewModel = viewModel,
+                        amountToBeConverted = state.amountToBeConverted,
+                        selectedCoin = state.selectedCoin,
+                        lastUpdatedDate = state.lastUpdatedDate
+                    )
+                }
             }
         }
     }

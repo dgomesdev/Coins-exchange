@@ -6,20 +6,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun ConversionValue(
     modifier: Modifier = Modifier,
     conversionText: String,
 ) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        Text(text = conversionText, modifier, style = MaterialTheme.typography.titleLarge)
+    Row(
+        modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = conversionText,
+            modifier,
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ConversionValuePreview() {
-
 }

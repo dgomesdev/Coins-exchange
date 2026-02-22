@@ -17,6 +17,7 @@ import com.dgomesdev.exchangeapp.presentation.viewModel.ExchangeViewModel
 fun ExchangeNavHost(
     modifier: Modifier,
     navController: NavHostController,
+    isLandscape: Boolean,
     viewModel: ExchangeViewModel,
     amountToBeConverted: String,
     selectedCoin: Coin,
@@ -33,6 +34,7 @@ fun ExchangeNavHost(
         ) {
             ConversionScreen(
                 modifier = padding,
+                isLandscape = isLandscape,
                 amountToBeConverted = amountToBeConverted,
                 selectedCoin = selectedCoin,
                 conversionValueTexts = viewModel.getConversionValueTexts(shouldGetAllValues = false),

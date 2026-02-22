@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,7 +16,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.sp
 import com.dgomesdev.exchangeapp.domain.Coin
 
 @Composable
@@ -24,16 +24,16 @@ fun CoinToBeConverted(
     selectedCoin: Coin,
     onChangeSelectedCoin: (Coin) -> Unit
 ) {
-
-    var expandedMenu by remember {
-        mutableStateOf(false)
-    }
+    var expandedMenu by remember { mutableStateOf(false) }
 
     Column(modifier) {
         OutlinedButton(
             onClick = { expandedMenu = true }
         ) {
-            Text(selectedCoin.name, fontSize = 20.sp)
+            Text(
+                selectedCoin.name,
+                style = MaterialTheme.typography.titleLarge
+                )
             Icon(
                 imageVector = if (!expandedMenu)
                     Icons.Default.ArrowDropDown else Icons.Default.KeyboardArrowUp,
