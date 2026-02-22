@@ -1,6 +1,5 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.compose") version "2.3.10"
@@ -83,11 +82,12 @@ dependencies {
     implementation("com.google.code.gson:gson:2.13.2")
 
     implementation("androidx.room:room-runtime:2.8.4")
+    implementation("androidx.compose.material3.adaptive:adaptive:1.2.0")
     ksp("androidx.room:room-compiler:2.8.4")
     implementation("androidx.room:room-ktx:2.8.4")
 
-    implementation("com.google.dagger:hilt-android:2.59.1")
-    ksp("com.google.dagger:hilt-compiler:2.59.1")
+    implementation("com.google.dagger:hilt-android:2.59.2")
+    ksp("com.google.dagger:hilt-compiler:2.59.2")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("androidx.test:core:1.7.0")
@@ -95,7 +95,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.21.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
 
-    testImplementation("com.google.dagger:hilt-android-testing:2.59.1")
+    testImplementation("com.google.dagger:hilt-android-testing:2.59.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation(platform("androidx.compose:compose-bom:2026.02.00"))
