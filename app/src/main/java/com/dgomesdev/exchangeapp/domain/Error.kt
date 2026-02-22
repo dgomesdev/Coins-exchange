@@ -1,6 +1,19 @@
 package com.dgomesdev.exchangeapp.domain
 
-open class ApiException(message: String, cause: Throwable? = null) : Exception(message, cause)
+open class ApiException(
+    message: String,
+    cause: Throwable? = null
+) : Exception(message, cause) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
+}
 
 class InvalidCoinsException(message: String = "Invalid coins.", cause: Throwable? = null) : ApiException(message, cause)
 class CoinNotFoundException(message: String = "Coin not found.", cause: Throwable? = null) : ApiException(message, cause)

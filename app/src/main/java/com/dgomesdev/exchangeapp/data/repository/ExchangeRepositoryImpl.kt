@@ -5,6 +5,7 @@ import com.dgomesdev.exchangeapp.data.local.ExchangeLocalDataSource
 import com.dgomesdev.exchangeapp.data.remote.ExchangeRemoteDataSource
 import com.dgomesdev.exchangeapp.domain.ConversionPair
 import com.dgomesdev.exchangeapp.domain.ExchangeModel
+import com.dgomesdev.exchangeapp.domain.InvalidCoinsException
 import com.dgomesdev.exchangeapp.domain.RepositoryError
 import java.time.Instant
 import java.time.ZoneId
@@ -21,7 +22,7 @@ class ExchangeRepositoryImpl @Inject constructor(
     override suspend fun getValues(conversionPairs: List<ConversionPair>): Result<List<ExchangeModel>> {
         return runCatching {
             if (conversionPairs.isEmpty()) {
-                throw IllegalArgumentException("Coins list can't be empty")
+                throw InvalidCoinsException("Coins list can't be empty")
             }
 
             try {
@@ -74,8 +75,13 @@ class ExchangeRepositoryImpl @Inject constructor(
         return timeDifference >= 60 * 60 * 1000
     }
 
-    private suspend fun fetchFromLocalDatabase() =
-        localDataSource.getAllExchangeValues().map { localEntity ->
+    private suspend fun fetchFromLocalDatabase(): List<ExchangeModel> {
+        val values = localDataSource.getAllExchangeValues()
+        if (values.isEmpty()) {
+            throw RepositoryError("An unexpected error occurred")
+        }
+        return values.map { localEntity ->
             ExchangeModel.fromLocalEntity(localEntity)
         }
+    }
 }

@@ -21,52 +21,51 @@ import retrofit2.Response
 import java.io.IOException
 import java.net.SocketTimeoutException
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 @RunWith(MockitoJUnitRunner::class)
 class ExchangeRemoteDataSourceImplTest {
 
     @Mock
     private lateinit var mockApi: ExchangeApi
-
-    private val mockExchangeValue = ExchangeValue(
-        code = "USD",
-        codein = "BRL",
-        name = "Dólar Americano/Real Brasileiro",
-        high = "5.734",
-        low = "5.7279",
-        varBid = "-0.0054",
-        pctChange = "-0.09",
-        bid = "5.7276",
-        ask = "5.7282",
-        timestamp = "1618315045",
-        createDate = "2021-04-13 08:57:27"
-    )
-    private val mockConversionPair = ConversionPair.USDBRL
-    private val mockExchangeResponse: ExchangeResponse = mapOf(mockConversionPair.name to mockExchangeValue)
-
-    private val invalidCoinsMessage = "Invalid coins."
-    private val coinsNotFoundErrorMessage = "Coins Not Found Error: 404 - Coins not found"
-    private val networkErrorMessage = "Error: Network connection failed"
-    private val serverErrorMessage = "Server error: 500"
-    private val clientErrorMessage = "Client error: 400"
-    private val timeoutErrorMessage = "Request timed out"
+    
+    companion object {
+        private val mockExchangeValue = ExchangeValue(
+            code = "USD",
+            codein = "BRL",
+            name = "Dólar Americano/Real Brasileiro",
+            high = "5.734",
+            low = "5.7279",
+            varBid = "-0.0054",
+            pctChange = "-0.09",
+            bid = "5.7276",
+            ask = "5.7282",
+            timestamp = "1618315045",
+            createDate = "2021-04-13 08:57:27"
+        )
+        private val mockConversionPair = ConversionPair.USDBRL
+        private val mockExchangeResponse: ExchangeResponse = mapOf(mockConversionPair.name to mockExchangeValue)
+        private const val INVALID_COINS_MESSAGE = "Invalid coins."
+        private const val COINS_NOT_FOUND_ERROR_MESSAGE = "Coins Not Found Error: 404 - Coins not found"
+        private const val NETWORK_ERROR_MESSAGE = "Error: Network connection failed"
+        private const val SERVER_ERROR_MESSAGE = "Server error: 500"
+        private const val CLIENT_ERROR_MESSAGE = "Client error: 400"
+        private const val TIMEOUT_ERROR_MESSAGE = "Request timed out"
+    }
 
     @Test
     fun `getExchangeValues successful response`() {
         runTest {
             // Given
             mockApi = mock<ExchangeApi> {
-                onBlocking { getExchangeValues(mockConversionPair.coins) } doReturn mockExchangeResponse
+                on { getExchangeValues(mockConversionPair.coins) } doReturn mockExchangeResponse
             }
             val remoteDataSource = ExchangeRemoteDataSourceImpl(mockApi)
-
 
             // When
             val result = remoteDataSource.getExchangeValues(mockConversionPair.coins)
 
             // Then
-            assertEquals(mockExchangeResponse, result)
+            assertEquals(Result.success(mockExchangeResponse), result)
         }
     }
 
@@ -78,12 +77,15 @@ class ExchangeRemoteDataSourceImplTest {
             val remoteDataSource = ExchangeRemoteDataSourceImpl(mockApi)
 
             // When
-            val exception = assertFailsWith<InvalidCoinsException> {
-                remoteDataSource.getExchangeValues("")
-            }
+            val result = remoteDataSource.getExchangeValues("")
 
             // Then
-            assertEquals(invalidCoinsMessage, exception.message)
+            assertEquals(
+                Result.failure(
+                    InvalidCoinsException(INVALID_COINS_MESSAGE)
+                ),
+                result
+            )
         }
     }
 
@@ -99,7 +101,7 @@ class ExchangeRemoteDataSourceImplTest {
                 Response.error<Any>(404, responseErrorBody)
             )
             mockApi = mock<ExchangeApi> {
-                onBlocking {
+                on {
                     getExchangeValues("invalidcoin")
                 } doThrow mockHttpException
             }
@@ -107,12 +109,16 @@ class ExchangeRemoteDataSourceImplTest {
 
 
             // When
-            val exception = assertFailsWith<CoinNotFoundException> {
-                remoteDataSource.getExchangeValues("invalidcoin")
-            }
+            val result = remoteDataSource.getExchangeValues("invalidcoin")
+            
 
             // Then
-            assertEquals(coinsNotFoundErrorMessage, exception.message)
+            assertEquals(
+                Result.failure(
+                    CoinNotFoundException(COINS_NOT_FOUND_ERROR_MESSAGE)
+                ),
+                result
+            )
         }
     }
 
@@ -128,7 +134,7 @@ class ExchangeRemoteDataSourceImplTest {
                 Response.error<Any>(404, responseErrorBody)
             )
             mockApi = mock<ExchangeApi> {
-                onBlocking {
+                on {
                     getExchangeValues("${mockConversionPair.coins}, invalidcoin")
                 } doThrow mockHttpException
             }
@@ -136,12 +142,15 @@ class ExchangeRemoteDataSourceImplTest {
 
 
             // When
-            val exception = assertFailsWith<CoinNotFoundException> {
-                remoteDataSource.getExchangeValues("${mockConversionPair.coins}, invalidcoin")
-            }
+            val result = remoteDataSource.getExchangeValues("${mockConversionPair.coins}, invalidcoin")
 
             // Then
-            assertEquals(coinsNotFoundErrorMessage, exception.message)
+            assertEquals(
+                Result.failure(
+                    CoinNotFoundException(COINS_NOT_FOUND_ERROR_MESSAGE)
+                ),
+                result
+            )
         }
     }
 
@@ -150,20 +159,23 @@ class ExchangeRemoteDataSourceImplTest {
         runTest {
             // Given
             mockApi = mock<ExchangeApi> {
-                onBlocking {
+                on {
                     getExchangeValues(mockConversionPair.coins)
-                } doThrow(RuntimeException(IOException(networkErrorMessage)))
+                } doThrow(IOException(NETWORK_ERROR_MESSAGE))
             }
             val remoteDataSource = ExchangeRemoteDataSourceImpl(mockApi)
 
 
             // When
-            val exception = assertFailsWith<NetworkErrorException> {
-                remoteDataSource.getExchangeValues(mockConversionPair.coins)
-            }
+            val result = remoteDataSource.getExchangeValues(mockConversionPair.coins)
 
             // Then
-            assertEquals(networkErrorMessage, exception.message)
+            assertEquals(
+                Result.failure(
+                    NetworkErrorException(NETWORK_ERROR_MESSAGE)
+                ),
+                result
+            )
         }
     }
 
@@ -174,11 +186,11 @@ class ExchangeRemoteDataSourceImplTest {
             val mockHttpException = HttpException(
                 Response.error<Any>(
                     500,
-                    serverErrorMessage.toResponseBody(null)
+                    SERVER_ERROR_MESSAGE.toResponseBody(null)
                 )
             )
             mockApi = mock<ExchangeApi> {
-                onBlocking {
+                on {
                     getExchangeValues(mockConversionPair.coins)
                 } doThrow mockHttpException
             }
@@ -186,12 +198,15 @@ class ExchangeRemoteDataSourceImplTest {
 
 
             // When
-            val exception = assertFailsWith<ServerErrorException> {
-                remoteDataSource.getExchangeValues(mockConversionPair.coins)
-            }
+            val result = remoteDataSource.getExchangeValues(mockConversionPair.coins)
 
             // Then
-            assertEquals(serverErrorMessage, exception.message)
+            assertEquals(
+                Result.failure(
+                    ServerErrorException(mockHttpException.code(), mockHttpException)
+                ),
+                result
+            )
         }
     }
 
@@ -202,11 +217,11 @@ class ExchangeRemoteDataSourceImplTest {
             val mockHttpException = HttpException(
                 Response.error<Any>(
                     400,
-                    clientErrorMessage.toResponseBody(null)
+                    CLIENT_ERROR_MESSAGE.toResponseBody(null)
                 )
             )
             mockApi = mock<ExchangeApi> {
-                onBlocking {
+                on {
                     getExchangeValues(mockConversionPair.coins)
                 } doThrow mockHttpException
             }
@@ -214,12 +229,15 @@ class ExchangeRemoteDataSourceImplTest {
 
 
             // When
-            val exception = assertFailsWith<ClientErrorException> {
-                remoteDataSource.getExchangeValues(mockConversionPair.coins)
-            }
+            val result = remoteDataSource.getExchangeValues(mockConversionPair.coins)
 
             // Then
-            assertEquals(clientErrorMessage, exception.message)
+            assertEquals(
+                Result.failure(
+                    ClientErrorException(mockHttpException.code(), mockHttpException)
+                ),
+                result
+            )
         }
     }
 
@@ -228,20 +246,23 @@ class ExchangeRemoteDataSourceImplTest {
         runTest {
             // Given
             mockApi = mock<ExchangeApi> {
-                onBlocking {
+                on {
                     getExchangeValues(mockConversionPair.coins)
-                } doThrow RuntimeException(SocketTimeoutException(timeoutErrorMessage))
+                } doThrow RuntimeException(SocketTimeoutException(TIMEOUT_ERROR_MESSAGE))
             }
             val remoteDataSource = ExchangeRemoteDataSourceImpl(mockApi)
 
 
             // When
-            val exception = assertFailsWith<TimeoutException> {
-                remoteDataSource.getExchangeValues(mockConversionPair.coins)
-            }
+            val result = remoteDataSource.getExchangeValues(mockConversionPair.coins)
 
             // Then
-            assertEquals(timeoutErrorMessage, exception.message)
+            assertEquals(
+                Result.failure(
+                    TimeoutException(TIMEOUT_ERROR_MESSAGE)
+                ),
+                result
+            )
         }
     }
 }

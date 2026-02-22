@@ -2,11 +2,7 @@ package com.dgomesdev.exchangeapp.data.local
 
 import com.dgomesdev.exchangeapp.domain.Coin
 import com.dgomesdev.exchangeapp.domain.ConversionPair
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.test.runTest
-import kotlin.test.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
@@ -17,6 +13,7 @@ import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 @RunWith(MockitoJUnitRunner::class)
@@ -25,25 +22,27 @@ class ExchangeLocalDataSourceImplTest {
     @Mock
     private lateinit var mockDao: ExchangeDao
 
-    private val mockConversionPair = ConversionPair.USDBRL
+    companion object {
+        private val MOCK_CONVERSION_PAIR = ConversionPair.USDBRL
 
-    private val mockEntity = ExchangeLocalEntity(
-        mockConversionPair.name,
-        1.0,
-        Coin.USD.name
-    )
+        private val MOCK_ENTITY = ExchangeLocalEntity(
+            MOCK_CONVERSION_PAIR.name,
+            1.0,
+            Coin.USD.name
+        )
+    }
 
     @Test
     fun `getAll   success   Empty DB`() {
         runTest {
             // Given
             mockDao = mock<ExchangeDao> {
-                on { getAll() } doReturn flowOf(emptyList())
+                on { getAllExchangeValues() } doReturn emptyList()
             }
             val localDataSource = ExchangeLocalDataSourceImpl(mockDao)
 
             //  When
-            val result = localDataSource.getAll().single()
+            val result = localDataSource.getAllExchangeValues()
 
             // Then
             assertEquals(emptyList(), result)
@@ -52,35 +51,33 @@ class ExchangeLocalDataSourceImplTest {
 
     @Test
     fun `getAll   success   Non empty DB`() {
-        // Verify that getAll() returns a Flow containing a list of all ExchangeLocalEntity objects stored in the database.
         runTest {
             // Given
             mockDao = mock<ExchangeDao> {
-                on { getAll() } doReturn flowOf(listOf(mockEntity))
+                on { getAllExchangeValues() } doReturn listOf(MOCK_ENTITY)
             }
             val localDataSource = ExchangeLocalDataSourceImpl(mockDao)
 
             //  When
-            val result = localDataSource.getAll().single()
+            val result = localDataSource.getAllExchangeValues()
 
             // Then
-            assertEquals(listOf(mockEntity), result)
+            assertEquals(listOf(MOCK_ENTITY), result)
         }
     }
 
     @Test
     fun `getAll   error   Database exception`() {
-        // Verify that getAll() correctly propagates any exceptions thrown by the underlying exchangeDao.getAll() method (e.g., database connection error).
         runTest {
             // Given
             mockDao = mock<ExchangeDao> {
-                on { getAll() } doThrow RuntimeException("Database error")
+                on { getAllExchangeValues() } doThrow RuntimeException("Database error")
             }
             val localDataSource = ExchangeLocalDataSourceImpl(mockDao)
 
             //  When
             val thrown = assertFailsWith<RuntimeException> {
-                localDataSource.getAll().collect()
+                localDataSource.getAllExchangeValues()
             }
 
             // Then
@@ -90,42 +87,37 @@ class ExchangeLocalDataSourceImplTest {
 
     @Test
     fun `save   success   New entity`() {
-        // Verify that save() successfully inserts a new ExchangeLocalEntity into the database.
         runTest {
             // Given
             val localDataSource = ExchangeLocalDataSourceImpl(mockDao)
 
             // When
-            localDataSource.save(mockEntity)
+            localDataSource.saveExchangeData(listOf(MOCK_ENTITY))
 
             // Then
-            // Verify that mockDao.save() was called exactly once with the entityToSave
-            verify(mockDao, times(1)).save(mockEntity)
-            // You can also use verify(mockDao).save(entityToSave) which defaults to times(1)
+            verify(mockDao, times(1)).saveExchange(MOCK_ENTITY)
         }
     }
 
     @Test
     fun `save   error   Database exception`() {
-        // Verify that save() correctly propagates any exceptions thrown by the underlying exchangeDao.save() method (e.g., database constraint violation, connection error).
         runTest {
             // Given
-            val entityToSave = mockEntity
+            val entityToSave = MOCK_ENTITY
             val errorMessage = "DAO save failed"
             mockDao = mock<ExchangeDao> {
-                // Configure mockDao.save() to throw an exception when called with any entity
-                onBlocking { save(any()) } doThrow RuntimeException(errorMessage)
+                on { saveExchange(any()) } doThrow RuntimeException(errorMessage)
             }
             val localDataSource = ExchangeLocalDataSourceImpl(mockDao)
 
             // When
             val thrown = assertFailsWith<RuntimeException> {
-                localDataSource.save(entityToSave)
+                localDataSource.saveExchangeData(listOf(entityToSave))
             }
 
             // Then
             assertEquals(errorMessage, thrown.message)
-            verify(mockDao).save(entityToSave) // Optionally verify it was still called
+            verify(mockDao).saveExchange(entityToSave)
         }
     }
 }

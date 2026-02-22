@@ -2,26 +2,24 @@ package com.dgomesdev.exchangeapp.data.repository
 
 import com.dgomesdev.exchangeapp.data.local.ExchangeLocalDataSource
 import com.dgomesdev.exchangeapp.data.local.ExchangeLocalEntity
+import com.dgomesdev.exchangeapp.data.local.LastUpdatedTimestamp
 import com.dgomesdev.exchangeapp.data.remote.ExchangeRemoteDataSource
 import com.dgomesdev.exchangeapp.data.remote.ExchangeResponse
 import com.dgomesdev.exchangeapp.data.remote.ExchangeValue
 import com.dgomesdev.exchangeapp.domain.Coin
 import com.dgomesdev.exchangeapp.domain.ConversionPair
 import com.dgomesdev.exchangeapp.domain.ExchangeModel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flowOf
+import com.dgomesdev.exchangeapp.domain.InvalidCoinsException
+import com.dgomesdev.exchangeapp.domain.RepositoryError
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
-import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 @RunWith(MockitoJUnitRunner::class)
 class ExchangeRepositoryImplTest {
@@ -32,37 +30,39 @@ class ExchangeRepositoryImplTest {
     @Mock
     private lateinit var mockLocalDataSource: ExchangeLocalDataSource
 
-    private val mockConversionPair = ConversionPair.USDBRL
+    companion object {
+        private val MOCK_CONVERSION_PAIR = ConversionPair.USDBRL
 
-    private val mockModel = ExchangeModel(
-        conversionPair = mockConversionPair,
-        bid = 5.7276,
-        code = Coin.USD.name,
-    )
+        private val MOCK_MODEL = ExchangeModel(
+            conversionPair = MOCK_CONVERSION_PAIR,
+            bid = 5.7276,
+            code = Coin.USD.name,
+        )
 
-    private val mockExchangeValue = ExchangeValue(
-        code = "USD",
-        codein = "BRL",
-        name = "Dólar Americano/Real Brasileiro",
-        high = "5.734",
-        low = "5.7279",
-        varBid = "-0.0054",
-        pctChange = "-0.09",
-        bid = "5.7276",
-        ask = "5.7282",
-        timestamp = "1618315045",
-        createDate = "2021-04-13 08:57:27"
-    )
+        private val MOCK_EXCHANGE_VALUE = ExchangeValue(
+            code = "USD",
+            codein = "BRL",
+            name = "Dólar Americano/Real Brasileiro",
+            high = "5.734",
+            low = "5.7279",
+            varBid = "-0.0054",
+            pctChange = "-0.09",
+            bid = "5.7276",
+            ask = "5.7282",
+            timestamp = "1618315045",
+            createDate = "2021-04-13 08:57:27"
+        )
 
-    private val mockExchangeResponse: ExchangeResponse = mapOf(
-        mockConversionPair.name to mockExchangeValue
-    )
+        private val MOCK_EXCHANGE_RESPONSE: ExchangeResponse = mapOf(
+            MOCK_CONVERSION_PAIR.name to MOCK_EXCHANGE_VALUE
+        )
 
-    private val mockEntity = ExchangeLocalEntity(
-        mockConversionPair.name,
-        5.7276,
-        Coin.USD.name
-    )
+        private val MOCK_ENTITY = ExchangeLocalEntity(
+            MOCK_CONVERSION_PAIR.name,
+            5.7276,
+            Coin.USD.name
+        )
+    }
 
         @Test
         fun `Empty conversionPairs list throws IllegalArgumentException`() {
@@ -73,12 +73,37 @@ class ExchangeRepositoryImplTest {
                 val repository = ExchangeRepositoryImpl(mockRemoteDataSource, mockLocalDataSource)
 
                 // When
-                val thrown = assertFailsWith<IllegalArgumentException> {
-                    repository.getValues(emptyList()).collect()
-                }
+                val result = repository.getValues(emptyList())
 
                 // Then
-                assertEquals("Coins list can't be empty", thrown.message)
+                assertEquals(
+                    Result.failure(
+                        InvalidCoinsException("Coins list can't be empty")
+                    ),
+                    result
+                )
+            }
+        }
+
+        @Test
+        fun `Successful local fetch`() {
+            runTest {
+                // Given
+                mockLocalDataSource = mock<ExchangeLocalDataSource> {
+                    on {
+                        getLastUpdatedTimestamp()
+                    } doReturn LastUpdatedTimestamp(timestamp = System.currentTimeMillis())
+                    on {
+                        getAllExchangeValues()
+                    } doReturn listOf(MOCK_ENTITY)
+                }
+                val repository = ExchangeRepositoryImpl(mockRemoteDataSource, mockLocalDataSource)
+
+                // When
+                val result = repository.getValues(listOf(MOCK_CONVERSION_PAIR))
+
+                // Then
+                assertEquals(Result.success(listOf(MOCK_MODEL)), result)
             }
         }
 
@@ -86,69 +111,84 @@ class ExchangeRepositoryImplTest {
         fun `Successful remote fetch and save`() {
             runTest {
                 // Given
-                mockRemoteDataSource = mock<ExchangeRemoteDataSource> {
-                    onBlocking {
-                        getExchangeValues(mockConversionPair.coins)
-                    } doReturn mockExchangeResponse
-                }
                 mockLocalDataSource = mock<ExchangeLocalDataSource> {
-                    onBlocking { save(any<ExchangeLocalEntity>()) } doReturn Unit
+                    on {
+                        getLastUpdatedTimestamp()
+                    } doReturn LastUpdatedTimestamp(timestamp = System.currentTimeMillis() - 61 * 60 * 1000)
+                    on {
+                        saveExchangeData(listOf(MOCK_ENTITY))
+                    } doReturn Unit
+                }
+                mockRemoteDataSource = mock<ExchangeRemoteDataSource> {
+                    on {
+                        getExchangeValues(MOCK_CONVERSION_PAIR.coins)
+                    } doReturn Result.success(MOCK_EXCHANGE_RESPONSE)
                 }
                 val repository = ExchangeRepositoryImpl(mockRemoteDataSource, mockLocalDataSource)
 
                 // When
-                val result = repository.getValues(listOf(mockConversionPair)).firstOrNull()
+                val result = repository.getValues(listOf(MOCK_CONVERSION_PAIR))
 
                 // Then
-                assertEquals(listOf(mockModel), result)
+                assertEquals(Result.success(listOf(MOCK_MODEL)), result)
             }
         }
 
         @Test
-        fun `Remote fetch fails  local data exists and is emitted`() {
+        fun `Remote fetch fails local fetch succeeds`() {
             runTest {
                 // Given
-                mockRemoteDataSource = mock<ExchangeRemoteDataSource> {
-                    onBlocking {
-                        getExchangeValues(mockConversionPair.coins)
-                    } doThrow RuntimeException("Remote fetch failed")
-                }
                 mockLocalDataSource = mock<ExchangeLocalDataSource> {
-                    onBlocking { getAll() } doReturn flowOf(listOf(mockEntity))
+                    on {
+                        getLastUpdatedTimestamp()
+                    } doReturn LastUpdatedTimestamp(timestamp = System.currentTimeMillis() - 61 * 60 * 1000)
+                    on {
+                        getAllExchangeValues()
+                    } doReturn listOf(MOCK_ENTITY)
+                }
+                mockRemoteDataSource = mock<ExchangeRemoteDataSource> {
+                    on {
+                        getExchangeValues(MOCK_CONVERSION_PAIR.coins)
+                    } doReturn Result.failure(RuntimeException("Remote fetch failed"))
                 }
                 val repository = ExchangeRepositoryImpl(mockRemoteDataSource, mockLocalDataSource)
 
                 // When
-                val result = repository.getValues(listOf(mockConversionPair)).firstOrNull()
+                val result = repository.getValues(listOf(MOCK_CONVERSION_PAIR))
 
                 // Then
-                assertEquals(listOf(mockModel), result)
+                assertEquals(Result.success(listOf(MOCK_MODEL)), result)
             }
         }
 
         @Test
-        fun `Remote fetch fails  local data is empty  throws RuntimeException`() {
+        fun `Remote fetch fails local fetch fails return error result`() {
             runTest {
                 // Given
-                mockRemoteDataSource = mock<ExchangeRemoteDataSource> {
-                    onBlocking {
-                        getExchangeValues(mockConversionPair.coins)
-                    } doThrow RuntimeException("Remote fetch failed")
-                }
                 mockLocalDataSource = mock<ExchangeLocalDataSource> {
-                    onBlocking { getAll() } doReturn flowOf(emptyList())
+                    on {
+                        getLastUpdatedTimestamp()
+                    } doReturn null
+                    on {
+                        getAllExchangeValues()
+                    } doReturn emptyList()
+                }
+                mockRemoteDataSource = mock<ExchangeRemoteDataSource> {
+                    on {
+                        getExchangeValues(MOCK_CONVERSION_PAIR.coins)
+                    } doReturn Result.failure(RuntimeException("Remote fetch failed"))
                 }
                 val repository = ExchangeRepositoryImpl(mockRemoteDataSource, mockLocalDataSource)
 
                 // When
-                val thrown = assertFailsWith<RuntimeException> {
-                    repository.getValues(listOf(mockConversionPair)).firstOrNull()
-                }
+                val result = repository.getValues(listOf(MOCK_CONVERSION_PAIR))
 
                 // Then
                 assertEquals(
-                    "Failed to fetch from remote, and no local data found.",
-                    thrown.message
+                    Result.failure(
+                        RepositoryError("An unexpected error occurred")
+                    ),
+                    result
                 )
             }
         }
@@ -157,28 +197,31 @@ class ExchangeRepositoryImplTest {
         fun `Error during localDataSource save operation`() {
             runTest {
                 // Given
-                mockRemoteDataSource = mock<ExchangeRemoteDataSource> {
-                    onBlocking {
-                        getExchangeValues(mockConversionPair.coins)
-                    } doReturn mockExchangeResponse
-                }
                 mockLocalDataSource = mock<ExchangeLocalDataSource> {
-                    onBlocking {
-                        save(any<ExchangeLocalEntity>())
+                    on {
+                        getLastUpdatedTimestamp()
+                    } doReturn LastUpdatedTimestamp(timestamp = System.currentTimeMillis() - 61 * 60 * 1000)
+                    on {
+                        saveExchangeData(listOf(MOCK_ENTITY))
                     } doThrow RuntimeException("Local save failed")
-                    onBlocking { getAll() } doReturn flowOf(emptyList())
+                }
+                mockRemoteDataSource = mock<ExchangeRemoteDataSource> {
+                    on {
+                        getExchangeValues(MOCK_CONVERSION_PAIR.coins)
+                    } doReturn Result.success(MOCK_EXCHANGE_RESPONSE)
                 }
                 val repository = ExchangeRepositoryImpl(mockRemoteDataSource, mockLocalDataSource)
 
                 // When
-                val thrown = assertFailsWith<RuntimeException> {
-                    repository.getValues(listOf(mockConversionPair)).firstOrNull()
-                }
+                val result = repository.getValues(listOf(MOCK_CONVERSION_PAIR))
+
 
                 // Then
                 assertEquals(
-                    "Failed to fetch from remote, and no local data found.",
-                    thrown.message
+                    Result.failure(
+                        RepositoryError("Local save failed")
+                    ),
+                    result
                 )
             }
         }
